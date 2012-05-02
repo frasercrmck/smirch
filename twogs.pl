@@ -102,9 +102,9 @@ Irssi::command_bind wog_it => sub {
 
         my $rand_nick = int(rand($#nick_list)) + 1;
         my $nick_count = 0;
+
         foreach my $nick (@nick_list)
         {
-            print $nick->{'nick'};
             if ($nick_count == $rand_nick)
             {
                 $witem->command("SAY T-WOG\$ says: Big up ".$nick->{'nick'}.".");
