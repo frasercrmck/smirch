@@ -98,15 +98,28 @@ my @quotes = (
 );
 
 Irssi::command_bind wog_it => sub {
-    my ($data, $server, $witem) = @_;
-    my $nicks = $witem->nicks();
+
+    my $channel = Irssi::active_win->{active};
+    my $active_channel;
+
+    if (!$channel || (ref($channel) ne 'Irssi::Irc::Channel' && ref($channel) ne 'Irssi::Silc::Channel')
+        || $channel->{'type'} ne 'CHANNEL' || ($channel->{chat_type} ne 'SILC' && !$channel->{'names_got'}) )
+    {
+        return;
+    }
+    else
+    {
+        $active_channel = $channel;
+    }
+
+    my $nicks = $active_channel->nicks();
     my $rand = int(rand($#quotes + 2));
 
     if ($rand == $#quotes + 1)
     {
         # Really dumb way of getting random user, sorry
         my @nick_list = (sort {(($a->{'op'}?'1':$a->{'halfop'}?'2':$a->{'voice'}?'3':'4').lc($a->{'nick'}))
-            cmp (($b->{'op'}?'1':$b->{'halfop'}?'2':$b->{'voice'}?'3':'4').lc($b->{'nick'}))} $witem->nicks());
+            cmp (($b->{'op'}?'1':$b->{'halfop'}?'2':$b->{'voice'}?'3':'4').lc($b->{'nick'}))} $active_channel->nicks());
 
         my $rand_nick = int(rand($#nick_list)) + 1;
         my $nick_count = 0;
@@ -115,7 +128,7 @@ Irssi::command_bind wog_it => sub {
         {
             if ($nick_count == $rand_nick)
             {
-                $witem->command("SAY T-WOG\$ says: Big up ".$nick->{'nick'}.".");
+                $active_channel->command("SAY T-WOG\$ says: Big up ".$nick->{'nick'}.".");
                 return;
             }
             $nick_count += 1;
@@ -123,7 +136,7 @@ Irssi::command_bind wog_it => sub {
     }
     else
     {
-        $witem->command("SAY T-WOG\$ says: ".@quotes[$rand]);
+        $active_channel->command("SAY T-WOG\$ says: ".@quotes[$rand]);
     }
 
 };
